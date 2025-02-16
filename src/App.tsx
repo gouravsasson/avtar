@@ -4,28 +4,28 @@ import { createStore, Provider } from "jotai";
 import Video from "./component/Video";
 
 function App() {
-  // useEffect(() => {
-  //   const disableContextMenu = (event: MouseEvent) => event.preventDefault();
-  //   const disableKeys = (event: KeyboardEvent) => {
-  //     if (event.metaKey && event.altKey && event.key === "i") {
-  //       event.preventDefault();
-  //     }
-  //     if (
-  //       event.key === "F12" ||
-  //       (event.ctrlKey && event.shiftKey && event.key === "I")
-  //     ) {
-  //       event.preventDefault();
-  //     }
-  //   };
+  useEffect(() => {
+    const disableContextMenu = (event: MouseEvent) => event.preventDefault();
+    const disableKeys = (event: KeyboardEvent) => {
+      if (event.metaKey && event.altKey && event.key === "i") {
+        event.preventDefault();
+      }
+      if (
+        event.key === "F12" ||
+        (event.ctrlKey && event.shiftKey && event.key === "I")
+      ) {
+        event.preventDefault();
+      }
+    };
 
-  //   document.addEventListener("contextmenu", disableContextMenu);
-  //   document.addEventListener("keydown", disableKeys);
+    document.addEventListener("contextmenu", disableContextMenu);
+    document.addEventListener("keydown", disableKeys);
 
-  //   return () => {
-  //     document.removeEventListener("contextmenu", disableContextMenu);
-  //     document.removeEventListener("keydown", disableKeys);
-  //   };
-  // }, []);
+    return () => {
+      document.removeEventListener("contextmenu", disableContextMenu);
+      document.removeEventListener("keydown", disableKeys);
+    };
+  }, []);
   const jotaiStore = createStore();
   const callObject = useCallObject({});
 
