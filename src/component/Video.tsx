@@ -139,7 +139,7 @@ function Video() {
                 className="px-2 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-violet-600 to-blue-600 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-shadow flex items-center gap-2"
               >
                 {isLoading ? (
-                  <span className=" text-xs sm:text-base">
+                  <span className=" text-[8px] sm:text-base">
                     ... connecting to Kartik Aaryan
                   </span>
                 ) : (
