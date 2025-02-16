@@ -1,28 +1,35 @@
-import { Mic, Sparkles } from "lucide-react";
-import { useCallback } from "react";
+import { Mic, Sparkles, MicOff, Camera, CameraOff } from "lucide-react";
+import { useCallback, useState } from "react";
 import { useDaily } from "@daily-co/daily-react";
 import {
   DailyVideo,
   useMeetingState,
   DailyAudio,
   useParticipantIds,
+  useAudioTrack,
+  useVideoTrack,
+  useLocalSessionId,
 } from "@daily-co/daily-react";
 import axios from "axios";
 
 function Video() {
-//   const [isMicOn, setIsMicOn] = useState(true);
-//   const [isCameraOn, setIsCameraOn] = useState(true);
   const meetingState = useMeetingState();
-  console.log(meetingState);
+  const [isLoading, setIsLoading] = useState(false);
   const remoteParticipantIds = useParticipantIds({ filter: "remote" });
+  const localSessionId = useLocalSessionId();
+  const localVideo = useVideoTrack(localSessionId);
+  const localAudio = useAudioTrack(localSessionId);
+  const isCameraEnabled = !localVideo.isOff;
+  const isMicEnabled = !localAudio.isOff;
   const daily = useDaily();
   const handleClick = async () => {
+    setIsLoading(true);
     try {
       const createConversation = await axios.post(
         "https://tavusapi.com/v2/conversations",
         {
           // replica_id: "r3fbe3834a3e",
-          persona_id: "p2fbd605",
+          persona_id: "pd9671d95e32",
         },
         {
           headers: {
@@ -32,7 +39,6 @@ function Video() {
         }
       );
       const url = createConversation.data.conversation_url;
-      console.log(createConversation.data.conversation_url);
       await daily
         ?.join({
           url: url,
@@ -47,6 +53,7 @@ function Video() {
 
   const handleEnd = async () => {
     await daily?.leave();
+    setIsLoading(false);
   };
 
   const handleResize = useCallback(
@@ -55,63 +62,91 @@ function Video() {
     },
     []
   );
+  const toggleVideo = useCallback(() => {
+    daily?.setLocalVideo(!isCameraEnabled);
+  }, [daily, isCameraEnabled]);
+
+  const toggleAudio = useCallback(() => {
+    daily?.setLocalAudio(!isMicEnabled);
+  }, [daily, isMicEnabled]);
 
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6 flex items-center justify-center">
         <div className="w-full max-w-4xl aspect-video bg-white rounded-3xl shadow-xl relative overflow-hidden backdrop-blur-sm bg-opacity-80">
-          {/* Status Badge */}
-          {/* <div className="absolute top-6 left-6 z-10">
-            <div className="flex items-center gap-2 bg-white/90 px-4 py-2 rounded-full shadow-sm">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-green-600">
-                Live & Ready
-              </span>
-            </div>
-          </div> */}
-
           {/* Center Icon */}
           <div className=" h-full w-full flex justify-center items-center">
             {meetingState === "joined-meeting" ? (
-              <DailyVideo
-                className="size-full"
-                fit="contain"
-                type="video"
-                sessionId={remoteParticipantIds[0]}
-                onResize={handleResize}
-              />
+              <div>
+                <DailyVideo
+                  className="size-full"
+                  fit="contain"
+                  type="video"
+                  sessionId={remoteParticipantIds[0]}
+                  onResize={handleResize}
+                />
+                <DailyVideo
+                  className="absolute bottom-[79px] right-4 aspect-video h-40 w-24 overflow-hidden  lg:h-auto lg:w-52"
+                  fit="contain"
+                  type="video"
+                  sessionId={localSessionId}
+                  onResize={handleResize}
+                />
+              </div>
             ) : (
-              <div className="w-24 h-24 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
-                <Sparkles className="w-12 h-12 text-white" />
+              <div className="w-10 h-10  sm:w-16 sm:h-16 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                <Sparkles className="w-6 h-6 sm:w-12 sm:h-12 text-white" />
               </div>
             )}
           </div>
 
           {/* Bottom Controls */}
           <div className="absolute bottom-0 left-0 right-0 p-6 flex items-center justify-between bg-gradient-to-t from-black/10 to-transparent">
-            <div className="flex gap-4">
-              <button className="p-4 bg-white/90 rounded-full hover:bg-white transition-colors">
-                <Mic className="w-6 h-6 text-gray-700" />
+            <div className="flex items-end gap-4">
+              <button
+                onClick={toggleAudio}
+                className=" h-10 w-10 sm:h-16 sm:w-16 flex items-center justify-center bg-white/90 rounded-full hover:bg-white transition-colors"
+              >
+                {!isMicEnabled ? (
+                  <MicOff className="size-3 sm:size-6" />
+                ) : (
+                  <Mic className="size-3 sm:size-6" />
+                )}
               </button>
-              {/* <button className="p-4 bg-white/90 rounded-full hover:bg-white transition-colors">
-                <Video className="w-6 h-6 text-gray-700" />
-              </button> */}
+              <button
+                onClick={toggleVideo}
+                className="h-10 w-10 sm:h-16 sm:w-16 flex items-center justify-center bg-white/90 rounded-full hover:bg-white transition-colors"
+              >
+                {!isCameraEnabled ? (
+                  <CameraOff className="size-3 sm:size-6" />
+                ) : (
+                  <Camera className="size-3 sm:size-6" />
+                )}
+              </button>
             </div>
 
             {meetingState === "joined-meeting" ? (
               <button
                 onClick={handleEnd}
-                className="px-6 py-3 bg-gradient-to-r from-violet-600 to-blue-600 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-shadow flex items-center gap-2"
+                className="px-2 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-violet-600 to-blue-600 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-shadow flex items-center gap-2"
               >
-                <span>End talk</span>
+                <span className=" text-xs sm:text-base">End talk</span>
                 <Sparkles className="w-4 h-4" />
               </button>
             ) : (
               <button
                 onClick={handleClick}
-                className="px-6 py-3 bg-gradient-to-r from-violet-600 to-blue-600 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-shadow flex items-center gap-2"
+                className="px-2 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-violet-600 to-blue-600 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-shadow flex items-center gap-2"
               >
-                <span>Talk to Kartik Aaryan</span>
+                {isLoading ? (
+                  <span className=" text-xs sm:text-base">
+                    ... connecting to Kartik Aaryan
+                  </span>
+                ) : (
+                  <span className=" text-xs sm:text-base">
+                    Talk to Kartik Aaryan
+                  </span>
+                )}
                 <Sparkles className="w-4 h-4" />
               </button>
             )}
