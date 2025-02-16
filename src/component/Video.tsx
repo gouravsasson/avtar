@@ -1,5 +1,5 @@
 import { Mic, Sparkles } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useDaily } from "@daily-co/daily-react";
 import {
   DailyVideo,
@@ -10,8 +10,8 @@ import {
 import axios from "axios";
 
 function Video() {
-  const [isMicOn, setIsMicOn] = useState(true);
-  const [isCameraOn, setIsCameraOn] = useState(true);
+//   const [isMicOn, setIsMicOn] = useState(true);
+//   const [isCameraOn, setIsCameraOn] = useState(true);
   const meetingState = useMeetingState();
   console.log(meetingState);
   const remoteParticipantIds = useParticipantIds({ filter: "remote" });
